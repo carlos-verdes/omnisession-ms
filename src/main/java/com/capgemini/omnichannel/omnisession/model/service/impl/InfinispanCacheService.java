@@ -11,11 +11,9 @@ import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.capgemini.omnichannel.omnisession.dto.Environments;
 import com.capgemini.omnichannel.omnisession.model.service.CacheService;
 
 @Component
@@ -27,9 +25,6 @@ public class InfinispanCacheService implements CacheService {
 
 	@Value("${testProperty}")
 	String testValue;
-
-	@Autowired
-	Environments environments;
 
 	public InfinispanCacheService() {
 		super();
@@ -46,8 +41,6 @@ public class InfinispanCacheService implements CacheService {
 
 	@PostConstruct
 	public void init() {
-		logger.info(String.format("test value: %s", testValue));
-		logger.info(String.format("environments value: %s", environments));
 
 	}
 
