@@ -11,7 +11,6 @@ import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.capgemini.omnichannel.omnisession.model.service.CacheService;
@@ -22,9 +21,6 @@ public class InfinispanCacheService implements CacheService {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private DefaultCacheManager cacheManager;
-
-	@Value("${testProperty}")
-	String testValue;
 
 	public InfinispanCacheService() {
 		super();
