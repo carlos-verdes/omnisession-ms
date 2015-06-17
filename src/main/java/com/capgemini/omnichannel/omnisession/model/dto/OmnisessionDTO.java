@@ -22,7 +22,7 @@ public class OmnisessionDTO implements Serializable {
 	@NotNull
 	private final String userId;
 
-	private ConcurrentHashMap<String, SessionMetadataDTO> sessionMap = new ConcurrentHashMap<String, SessionMetadataDTO>();
+	private ConcurrentHashMap<String, SessionDTO> sessionMap = new ConcurrentHashMap<String, SessionDTO>();
 
 	public OmnisessionDTO(String userId) {
 		super();
@@ -41,7 +41,7 @@ public class OmnisessionDTO implements Serializable {
 	 * @throws IntrospectionException
 	 * @throws UserIdSessionDoesntMatchException
 	 */
-	public void addSession(SessionMetadataDTO session) throws IllegalAccessException, InstantiationException,
+	public void addSession(SessionDTO session) throws IllegalAccessException, InstantiationException,
 			InvocationTargetException, NoSuchMethodException, IntrospectionException, UserIdSessionDoesntMatchException {
 		if (session != null) {
 			if (!session.getUserId().equals(this.getUserId())) {
@@ -53,7 +53,7 @@ public class OmnisessionDTO implements Serializable {
 
 	}
 
-	public void storeDataInSession(SessionMetadataDTO session, String key, Object value) throws IllegalAccessException,
+	public void storeDataInSession(SessionDTO session, String key, Object value) throws IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException, IntrospectionException {
 
 		if (session != null) {
@@ -66,7 +66,7 @@ public class OmnisessionDTO implements Serializable {
 			IllegalArgumentException, InvocationTargetException, IntrospectionException {
 
 		if (this.sessionMap.containsKey(token)) {
-			SessionMetadataDTO sessionDTO = this.sessionMap.get(token);
+			SessionDTO sessionDTO = this.sessionMap.get(token);
 			sessionDTO.putData(key, value);
 		}
 	}
@@ -76,7 +76,7 @@ public class OmnisessionDTO implements Serializable {
 		T result = null;
 		if (this.sessionMap.containsKey(token)) {
 
-			SessionMetadataDTO sessionDTO = this.sessionMap.get(token);
+			SessionDTO sessionDTO = this.sessionMap.get(token);
 			result = sessionDTO.getData(key, clazz);
 
 		}

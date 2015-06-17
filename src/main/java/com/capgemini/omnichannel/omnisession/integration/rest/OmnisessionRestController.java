@@ -7,9 +7,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.capgemini.omnichannel.omnisession.model.service.CacheService;
+import com.capgemini.omnichannel.omnisession.model.dto.SessionDTO;
+import com.capgemini.omnichannel.omnisession.model.service.SessionService;
 
 @RestController("session")
 @RequestMapping("/session")
@@ -17,34 +19,36 @@ public class OmnisessionRestController {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@Autowired
-	private CacheService cacheService;
+	private SessionService sessionService;
 
-	@RequestMapping(value = "/{key}", method = RequestMethod.GET)
-	public String getSessionInfo(@PathVariable String key) {
-		logger.debug("geting value {0}", key);
+	@RequestMapping(value = "/{token}", method = RequestMethod.GET)
+	@ResponseBody
+	public SessionDTO getSessionInfo(@PathVariable String token) {
+		logger.debug("geting sessionDTO for token {}", token);
 
-		Object value = key != null ? cacheService.get(key) : "";
-		logger.debug("value is {}", value);
+		SessionDTO sessionDTO = token != null ? getSessionService().getSessionDTO(token) : null;
+		logger.debug("sessionDTO--> {}", sessionDTO);
 
-		return String.format("hello world, value is %s", value);
+		return sessionDTO;
 	}
 
-	@RequestMapping(value = "/{key}", method = RequestMethod.PUT)
-	public String updateSessionInfo(@PathVariable String key, @RequestBody String value) {
-		logger.debug("putting {}/{} key/value", key, value);
-		if (key != null) {
-			cacheService.put(key, value);
+	@RequestMapping(value = "/{token}", method = RequestMethod.PUT)
+	public String updateSessionInfo(@PathVariable String token, @RequestBody SessionDTO value) {
+		logger.debug("putting token/sessionDTO: {}/{} ", token, value);
+
+		if (token != null) {
+			getSessionService().updateSessionDTO(token, value);
 		}
 
 		return null;
 	}
 
-	public CacheService getCacheService() {
-		return cacheService;
+	public SessionService getSessionService() {
+		return sessionService;
 	}
 
-	public void setCacheService(CacheService cacheService) {
-		this.cacheService = cacheService;
+	public void setSessionService(SessionService sessionService) {
+		this.sessionService = sessionService;
 	}
 
 }

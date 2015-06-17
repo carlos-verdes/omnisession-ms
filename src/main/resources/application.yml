@@ -1,2 +1,4 @@
 omnisession:
-# testProperty: from YAML
+  clusterName: OmnisessionCluster
+  cacheName: OmnisessionCache
+  maxIdle: 30

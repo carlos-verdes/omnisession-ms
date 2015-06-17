@@ -37,7 +37,7 @@ public class OmnisessionDTOmergePayloadTests {
 
 	/**
 	 * Test method for
-	 * {@link com.capgemini.omnichannel.omnisession.model.dto.OmnisessionDTO#addSession(com.capgemini.omnichannel.omnisession.model.dto.SessionMetadataDTO)}
+	 * {@link com.capgemini.omnichannel.omnisession.model.dto.OmnisessionDTO#addSession(com.capgemini.omnichannel.omnisession.model.dto.SessionDTO)}
 	 * .
 	 * 
 	 * @throws UserIdSessionDoesntMatchException
@@ -51,14 +51,14 @@ public class OmnisessionDTOmergePayloadTests {
 	public void testAddSession() throws IllegalAccessException, InstantiationException, InvocationTargetException,
 			NoSuchMethodException, IntrospectionException, UserIdSessionDoesntMatchException {
 
-		SessionMetadataDTO session1 = new SessionMetadataDTO(USER_1, TOKEN_WEB_USER_1);
+		SessionDTO session1 = new SessionDTO(USER_1, TOKEN_WEB_USER_1);
 		omniSession.addSession(session1);
 
 	}
 
 	/**
 	 * Test session userId can't be null in method for
-	 * {@link com.capgemini.omnichannel.omnisession.model.dto.OmnisessionDTO#addSession(com.capgemini.omnichannel.omnisession.model.dto.SessionMetadataDTO)}
+	 * {@link com.capgemini.omnichannel.omnisession.model.dto.OmnisessionDTO#addSession(com.capgemini.omnichannel.omnisession.model.dto.SessionDTO)}
 	 * .
 	 */
 	@Test
@@ -69,7 +69,7 @@ public class OmnisessionDTOmergePayloadTests {
 
 	/**
 	 * Test SessionMetadaDTO.userId has to be the same as OmnisessionDTO.userId in method for
-	 * {@link com.capgemini.omnichannel.omnisession.model.dto.OmnisessionDTO#addSession(com.capgemini.omnichannel.omnisession.model.dto.SessionMetadataDTO)}
+	 * {@link com.capgemini.omnichannel.omnisession.model.dto.OmnisessionDTO#addSession(com.capgemini.omnichannel.omnisession.model.dto.SessionDTO)}
 	 * .
 	 * 
 	 * @throws UserIdSessionDoesntMatchException
@@ -82,7 +82,7 @@ public class OmnisessionDTOmergePayloadTests {
 	@Test(expected = UserIdSessionDoesntMatchException.class)
 	public void testAddSessionUserIdMustMatch() throws IllegalAccessException, InstantiationException,
 			InvocationTargetException, NoSuchMethodException, IntrospectionException, UserIdSessionDoesntMatchException {
-		this.omniSession.addSession(new SessionMetadataDTO(USER_2, null));
+		this.omniSession.addSession(new SessionDTO(USER_2, null));
 
 	}
 
@@ -101,8 +101,8 @@ public class OmnisessionDTOmergePayloadTests {
 	@Test
 	public void testStoreDataInSessionAndGet() throws IllegalAccessException, InstantiationException,
 			InvocationTargetException, NoSuchMethodException, IntrospectionException, UserIdSessionDoesntMatchException {
-		SessionMetadataDTO session1 = new SessionMetadataDTO(USER_1, TOKEN_WEB_USER_1);
-		SessionMetadataDTO session2 = new SessionMetadataDTO(USER_1, TOKEN_ANDROID_USER_1);
+		SessionDTO session1 = new SessionDTO(USER_1, TOKEN_WEB_USER_1);
+		SessionDTO session2 = new SessionDTO(USER_1, TOKEN_ANDROID_USER_1);
 
 		// create two session over same omnisession
 		omniSession.addSession(session1);
