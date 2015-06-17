@@ -25,9 +25,12 @@ public class InfinispanCacheService implements CacheService {
 
 	@Value("${omnisession.clusterName}")
 	private String clusterName;
-	
+
 	@Value("${omnisession.maxIdle}")
-	private long maxIdle; 
+	private long maxIdle;
+
+	@Value("${omnisession.expirationTimeInSeconds}")
+	private long expirationTimeInSeconds;
 
 	public InfinispanCacheService() {
 		super();
@@ -41,7 +44,8 @@ public class InfinispanCacheService implements CacheService {
 		GlobalConfigurationBuilder global = GlobalConfigurationBuilder.defaultClusteredBuilder();
 		global.transport().clusterName(clusterName);
 		ConfigurationBuilder config = new ConfigurationBuilder();
-		config.expiration().maxIdle(maxIdle, TimeUnit.SECONDS).clustering().cacheMode(CacheMode.DIST_SYNC);
+		config.expiration().lifespan(expirationTimeInSeconds, TimeUnit.SECONDS).maxIdle(maxIdle, TimeUnit.SECONDS)
+				.clustering().cacheMode(CacheMode.DIST_SYNC);
 		cacheManager = new DefaultCacheManager(global.build(), config.build());
 
 	}
@@ -129,7 +133,7 @@ public class InfinispanCacheService implements CacheService {
 
 		Cache<Object, Object> cache = getCache(cacheName);
 		cache.put(key, value);
-		
+
 		logger.debug(String.format("Cache updated, entrySet: %s", cache.values()));
 
 	}
@@ -148,6 +152,14 @@ public class InfinispanCacheService implements CacheService {
 
 	public void setMaxIdle(long maxIdle) {
 		this.maxIdle = maxIdle;
+	}
+
+	public long getExpirationTimeInSeconds() {
+		return expirationTimeInSeconds;
+	}
+
+	public void setExpirationTimeInSeconds(long expirationTimeInSeconds) {
+		this.expirationTimeInSeconds = expirationTimeInSeconds;
 	}
 
 }
