@@ -1,12 +1,11 @@
 package com.capgemini.omnichannel.omnisession.model.dto;
 
-import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * <p>
@@ -20,11 +19,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class OmnisessionDTO implements Serializable {
 	private static final long serialVersionUID = 1843131912441967616L;
 
+	@NotNull
 	private final String userId;
 
-	private ConcurrentHashMap<String, SessionDTO> sessionMap = new ConcurrentHashMap<String, SessionDTO>();
-
-	private ConcurrentHashMap<String, Object> mergedPayload = new ConcurrentHashMap<String, Object>();
+	private ConcurrentHashMap<String, SessionMetadataDTO> sessionMap = new ConcurrentHashMap<String, SessionMetadataDTO>();
 
 	public OmnisessionDTO(String userId) {
 		super();
@@ -41,46 +39,48 @@ public class OmnisessionDTO implements Serializable {
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
 	 * @throws IntrospectionException
+	 * @throws UserIdSessionDoesntMatchException
 	 */
-	public void addSession(SessionDTO session) throws IllegalAccessException, InstantiationException,
-			InvocationTargetException, NoSuchMethodException, IntrospectionException {
+	public void addSession(SessionMetadataDTO session) throws IllegalAccessException, InstantiationException,
+			InvocationTargetException, NoSuchMethodException, IntrospectionException, UserIdSessionDoesntMatchException {
 		if (session != null) {
+			if (!session.getUserId().equals(this.getUserId())) {
+				throw new UserIdSessionDoesntMatchException(session.getUserId(), this);
+			}
 			String token = session.getToken();
 			this.sessionMap.put(token, session);
-
-			mergePayloads(session.getUserId());
 		}
 
 	}
 
-	private void mergePayloads(String sessionId) throws IllegalAccessException, InstantiationException,
-			InvocationTargetException, NoSuchMethodException, IntrospectionException {
+	public void storeDataInSession(SessionMetadataDTO session, String key, Object value) throws IllegalAccessException,
+			IllegalArgumentException, InvocationTargetException, IntrospectionException {
 
-		ConcurrentHashMap<String, Object> mergedPayload = this.mergedPayload;
-		Object sourcePayload = this.sessionMap.get(sessionId);
+		if (session != null) {
+			storeDataInSession(session.getToken(), key, value);
 
-		if (sourcePayload != null) {
-
-			BeanInfo beanInfo = Introspector.getBeanInfo(sourcePayload.getClass());
-
-			// Iterate over all the attributes
-			for (PropertyDescriptor descriptor : beanInfo.getPropertyDescriptors()) {
-				String propertyName = descriptor.getDisplayName();
-
-				Object propertyValue = descriptor.getReadMethod().invoke(sourcePayload);
-
-//				ConcurrentHashMap<String,Object> payloadValue= this.mergedPayload.getOrDefault(propertyName, new ConcurrentHashMap<String, Object>());
-				
-				Object currentValue = this.mergedPayload.get(propertyName);
-				mergeObjects(propertyValue, currentValue);
-
-			}
 		}
-
 	}
 
-	private void mergeObjects(Object source, Object target) {
+	public void storeDataInSession(String token, String key, Object value) throws IllegalAccessException,
+			IllegalArgumentException, InvocationTargetException, IntrospectionException {
 
+		if (this.sessionMap.containsKey(token)) {
+			SessionMetadataDTO sessionDTO = this.sessionMap.get(token);
+			sessionDTO.putData(key, value);
+		}
+	}
+
+	public <T> T getDataFromSession(String token, String key, Class<? extends T> clazz) {
+
+		T result = null;
+		if (this.sessionMap.containsKey(token)) {
+
+			SessionMetadataDTO sessionDTO = this.sessionMap.get(token);
+			result = sessionDTO.getData(key, clazz);
+
+		}
+		return result;
 	}
 
 	/**
@@ -90,15 +90,6 @@ public class OmnisessionDTO implements Serializable {
 	 */
 	public String getUserId() {
 		return userId;
-	}
-
-	/**
-	 * Get the global session payload (a mix of all the sessions).
-	 * 
-	 * @return
-	 */
-	public Object getMergedPayload() {
-		return mergedPayload;
 	}
 
 }
