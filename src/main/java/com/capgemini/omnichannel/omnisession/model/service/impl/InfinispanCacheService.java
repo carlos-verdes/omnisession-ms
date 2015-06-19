@@ -87,6 +87,30 @@ public class InfinispanCacheService implements CacheService {
 
 	}
 
+	@Override
+	public <T> T getOrDefault(String key, Object defaultValue) {
+		T result = null;
+
+		result = getOrDefault(key, null);
+
+		return result;
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public <T> T getOrDefault(String key, String cacheName, Object defaultValue) {
+		T result = null;
+
+		Cache<Object, Object> cache;
+		cache = getCache(cacheName);
+
+		if (cache != null) {
+			result = (T) cache.getOrDefault(key, defaultValue);
+		}
+
+		return result;
+	}
+
 	private Cache<Object, Object> getCache(String cacheName) {
 		Cache<Object, Object> cache;
 		if (cacheName != null) {
@@ -136,6 +160,21 @@ public class InfinispanCacheService implements CacheService {
 
 		logger.debug(String.format("Cache updated, entrySet: %s", cache.values()));
 
+	}
+	
+	
+
+	@Override
+	public void putIfAbsent(String key, Object value) {
+		putIfAbsent(key, null, value);
+	}
+
+	@Override
+	public void putIfAbsent(String key, String cacheName, Object value) {
+		Cache<Object, Object> cache = getCache(cacheName);
+		cache.putIfAbsent(key, value);
+
+		logger.debug(String.format("Cache updated, entrySet: %s", cache.values()));
 	}
 
 	public String getClusterName() {

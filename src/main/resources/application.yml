@@ -1,5 +1,6 @@
 omnisession:
   clusterName: OmnisessionCluster
-  cacheName: OmnisessionCache
+  userTokensCache: userTokensCache
+  tokenSessionCache: tokenSessionCache
   expirationTimeInSeconds: -1  
   maxIdle: 30
