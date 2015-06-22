@@ -3,8 +3,6 @@ package com.capgemini.omnichannel.omnisession.integration.rest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,28 +23,31 @@ public class OmnisessionRestController {
 	private SessionService sessionService;
 
 	@RequestMapping(value = "/{token}", method = RequestMethod.GET)
-	@ResponseBody
-	public ResponseEntity<SessionRestDTO> getSessionInfo(@PathVariable String token) {
+	@ResponseBody()
+	public SessionRestDTO getSessionInfo(@PathVariable String token) {
 		logger.debug("geting sessionDTO for token {}", token);
 
 		SessionDTO sessionDTO = token != null ? getSessionService().getSessionDTO(token) : null;
-		SessionRestDTO sessionRestDTO = new SessionRestDTO(sessionDTO);
-		logger.debug("sessionDTO--> {}", sessionDTO);
-		
-		ResponseEntity<SessionRestDTO> response = new ResponseEntity<SessionRestDTO>(sessionRestDTO, sessionDTO!=null?HttpStatus.FOUND:HttpStatus.NOT_FOUND);
+		SessionRestDTO sessionRestDTO = null;
 
-		return response;
+		if (sessionDTO != null) {
+			sessionRestDTO = new SessionRestDTO(sessionDTO);
+		}
+
+		logger.debug("sessionDTO--> {}", sessionDTO);
+
+		return sessionRestDTO;
 	}
 
 	@RequestMapping(value = "/{token}", method = RequestMethod.PUT)
-	public String updateSessionInfo(@PathVariable String token, @RequestBody SessionDTO value) {
+	public SessionDTO updateSessionInfo(@PathVariable String token, @RequestBody SessionDTO value) {
 		logger.debug("putting token/sessionDTO: {}/{} ", token, value);
 
 		if (token != null) {
 			getSessionService().updateSessionDTO(token, value);
 		}
 
-		return null;
+		return value;
 	}
 
 	public SessionService getSessionService() {
