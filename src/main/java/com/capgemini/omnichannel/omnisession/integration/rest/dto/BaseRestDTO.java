@@ -14,9 +14,11 @@ public class BaseRestDTO<T> extends ResourceSupport implements Serializable{
 	}
 
 	public BaseRestDTO(T data) {
-		super();
+		this();
 		this.data = data;
 	}
+
+
 
 	public T getData() {
 		return data;
