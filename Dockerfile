@@ -6,4 +6,4 @@ RUN echo "Evitando cache 456, home: "$HOME && cd $HOME && git clone https://gith
 
 EXPOSE 8080
 
-CMD java -jar $HOME/omnisession-microservice/target/omnisession-microservice.jar
+CMD java -jar $HOME/omnisession-microservice/target/omnisession-ms.jar
