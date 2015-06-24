@@ -30,32 +30,43 @@ public class SessionServiceImpl implements SessionService {
 	@Autowired
 	private CacheService cacheService;
 
-	
 	@Override
-	public void updateSessionDTO(String token, SessionDTO sessionDTO) {
-		logger.debug(String.format("updating session, token: %s, session: %s", token, sessionDTO));
+	public SessionDTO getEntityById(String id) {
+		SessionDTO sessionDTO = cacheService.get(id, tokenSessionCache);
 
-		// update omnisession
-		updateOmnisession(sessionDTO);
-
-		// update current session
-		cacheService.put(token, tokenSessionCache, sessionDTO);
-	}
-
-
-	@Override
-	public SessionDTO getSessionDTO(String token) {
-		SessionDTO sessionDTO= cacheService.get(token, tokenSessionCache);
-		
-		if(sessionDTO!=null){
+		if (sessionDTO != null) {
 			touchOmnisession(sessionDTO);
 		}
-		
+
 		return sessionDTO;
 	}
 
+	@Override
+	public SessionDTO updateEntity(String id, SessionDTO value) {
+		logger.debug(String.format("updating entity, id:value -->  %s: %s", id, value));
 
-	
+		// update omnisession
+		updateOmnisession(value);
+
+		// update current session
+		cacheService.put(id, tokenSessionCache, value);
+
+		return value;
+	}
+
+	@Override
+	public SessionDTO insertEntity(String id, SessionDTO value) {
+		logger.debug(String.format("inserting entity, id:value -->  %s: %s", id, value));
+
+		// update omnisession
+		updateOmnisession(value);
+
+		// update current session
+		cacheService.putIfAbsent(id, tokenSessionCache, value);
+
+		return value;
+	}
+
 	/**
 	 * If session exist then do something
 	 * 
@@ -67,7 +78,7 @@ public class SessionServiceImpl implements SessionService {
 	public void doWithSession(String token, Consumer<SessionDTO> doWithSession) {
 
 		if (cacheService.containsKey(token, this.tokenSessionCache)) {
-			SessionDTO sessionDTO = getSessionDTO(token);
+			SessionDTO sessionDTO = this.getEntityById(token);
 
 			// touch omnisession to update idle timeouts
 			touchOmnisession(sessionDTO);
@@ -78,15 +89,13 @@ public class SessionServiceImpl implements SessionService {
 
 	}
 
-
-
 	@Override
 	public List<SessionDTO> getRelatedSessions(String token) {
 
 		final List<SessionDTO> relatedSessions = new ArrayList<SessionDTO>();
 
 		// if session exist
-		SessionDTO sessionDTO = getSessionDTO(token);
+		SessionDTO sessionDTO = this.getEntityById(token);
 		if (sessionDTO != null) {
 			Set<String> userSessionIdSet = this.getFromOmnisessionOfDefault(sessionDTO);
 
@@ -95,7 +104,7 @@ public class SessionServiceImpl implements SessionService {
 				String relatedToken = iter.next();
 
 				if (!relatedToken.equals(token)) {
-					SessionDTO relatedSession = this.getSessionDTO(relatedToken);
+					SessionDTO relatedSession = this.getEntityById(relatedToken);
 
 					// if exist in cache
 					if (relatedSession != null) {
@@ -121,7 +130,7 @@ public class SessionServiceImpl implements SessionService {
 		T result = null;
 
 		if (cacheService.containsKey(token, this.tokenSessionCache)) {
-			SessionDTO sessionDTO = getSessionDTO(token);
+			SessionDTO sessionDTO = this.getEntityById(token);
 
 			result = sessionDTO.getData(key, clazz);
 		}
@@ -129,16 +138,12 @@ public class SessionServiceImpl implements SessionService {
 		return result;
 	}
 
-
-
-
-
 	@Override
 	public <T> void updateSessionData(String token, String key, T data) {
 
 		if (cacheService.containsKey(token, this.tokenSessionCache)) {
 			// get the session
-			SessionDTO sessionDTO = getSessionDTO(token);
+			SessionDTO sessionDTO = this.getEntityById(token);
 
 			// update session
 			sessionDTO.putData(key, data);
@@ -147,14 +152,13 @@ public class SessionServiceImpl implements SessionService {
 
 	}
 
-
 	private Set<String> getFromOmnisessionOfDefault(SessionDTO sessionDTO) {
 		String userId = sessionDTO.getUserId();
 		return this.cacheService.getOrDefault(userId, this.userTokensCache, new HashSet<String>());
 	}
 
 	private void touchOmnisession(SessionDTO sessionDTO) {
-		//just check the omnisession to update timeouts
+		// just check the omnisession to update timeouts
 		if (sessionDTO != null) {
 			getFromOmnisessionOfDefault(sessionDTO);
 
@@ -184,28 +188,26 @@ public class SessionServiceImpl implements SessionService {
 		this.cacheService.put(userId, this.userTokensCache, userSessionIdsSet);
 	}
 
-
-
 	public String getTokenSessionCache() {
 		return tokenSessionCache;
 	}
-
-
 
 	public void setTokenSessionCache(String tokenSessionCache) {
 		this.tokenSessionCache = tokenSessionCache;
 	}
 
-
-
 	public String getUserTokensCache() {
 		return userTokensCache;
 	}
 
-
-
 	public void setUserTokensCache(String userTokensCache) {
 		this.userTokensCache = userTokensCache;
+	}
+
+	@Override
+	public Class<? extends SessionDTO> getEntityClass() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

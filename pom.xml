@@ -24,6 +24,12 @@
 	</properties>
 
 	<dependencies>
+		<!-- common ms -->
+		<dependency>
+			<groupId>com.capgemini.omnichannel</groupId>
+			<artifactId>common-ms</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 		<!-- infinispan -->
 		<dependency>
 			<groupId>org.infinispan</groupId>

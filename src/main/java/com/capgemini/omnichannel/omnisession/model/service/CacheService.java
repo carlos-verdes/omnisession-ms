@@ -10,13 +10,13 @@ public interface CacheService {
 
 	public <T> T getOrDefault(String key, String cacheName, Object defaultValue);
 
-	public void put(String key, Object value);
+	public <T> T put(String key, T value);
 
-	public void put(String key, String cacheName, Object value);
+	public <T> T put(String key, String cacheName, T value);
 
-	public void putIfAbsent(String key, Object value);
+	public <T> T putIfAbsent(String key, T value);
 
-	public void putIfAbsent(String key, String cacheName, Object value);
+	public <T> T putIfAbsent(String key, String cacheName, T value);
 
 	
 	public boolean containsKey(String key, String cacheName);

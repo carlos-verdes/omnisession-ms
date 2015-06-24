@@ -141,8 +141,8 @@ public class InfinispanCacheService implements CacheService {
 	 * @see com.capgemini.omnichannel.omnisession.model.service.CacheService#put(java.lang.String, java.lang.Object)
 	 */
 	@Override
-	public void put(String key, Object value) {
-		put(key, null, value);
+	public <T> T put(String key, T value) {
+		return put(key, null, value);
 
 	}
 
@@ -152,29 +152,34 @@ public class InfinispanCacheService implements CacheService {
 	 * @see com.capgemini.omnichannel.omnisession.model.service.CacheService#put(java.lang.String, java.lang.String,
 	 * java.lang.Object)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
-	public void put(String key, String cacheName, Object value) {
+	public <T> T put(String key, String cacheName, T value) {
 
 		Cache<Object, Object> cache = getCache(cacheName);
-		cache.put(key, value);
+		T result = (T) cache.put(key, value);
 
 		logger.debug(String.format("Cache updated, entrySet: %s", cache.values()));
+		return result;
 
 	}
 	
 	
 
 	@Override
-	public void putIfAbsent(String key, Object value) {
-		putIfAbsent(key, null, value);
+	public <T> T putIfAbsent(String key, T value) {
+		return putIfAbsent(key, null, value);
 	}
 
 	@Override
-	public void putIfAbsent(String key, String cacheName, Object value) {
+	@SuppressWarnings("unchecked")
+	public <T> T  putIfAbsent(String key, String cacheName, T value) {
 		Cache<Object, Object> cache = getCache(cacheName);
-		cache.putIfAbsent(key, value);
+		T  result = (T) cache.putIfAbsent(key, value);
 
 		logger.debug(String.format("Cache updated, entrySet: %s", cache.values()));
+		
+		return result;
 	}
 
 	public String getClusterName() {
