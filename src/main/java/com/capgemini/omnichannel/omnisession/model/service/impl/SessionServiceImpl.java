@@ -31,7 +31,7 @@ public class SessionServiceImpl implements SessionService {
 	private CacheService cacheService;
 
 	@Override
-	public SessionDTO getEntityById(String id) {
+	public SessionDTO getResourceById(String id) {
 		SessionDTO sessionDTO = cacheService.get(id, tokenSessionCache);
 
 		if (sessionDTO != null) {
@@ -42,8 +42,8 @@ public class SessionServiceImpl implements SessionService {
 	}
 
 	@Override
-	public SessionDTO updateEntity(String id, SessionDTO value) {
-		logger.debug(String.format("updating entity, id:value -->  %s: %s", id, value));
+	public <S extends SessionDTO> S updateResource(String id, S value) {
+		logger.debug(String.format("updating Resource, id:value -->  %s: %s", id, value));
 
 		// update omnisession
 		updateOmnisession(value);
@@ -55,8 +55,8 @@ public class SessionServiceImpl implements SessionService {
 	}
 
 	@Override
-	public SessionDTO insertEntity(String id, SessionDTO value) {
-		logger.debug(String.format("inserting entity, id:value -->  %s: %s", id, value));
+	public <S extends SessionDTO> S insertResource(String id, S value) {
+		logger.debug(String.format("inserting Resource, id:value -->  %s: %s", id, value));
 
 		// update omnisession
 		updateOmnisession(value);
@@ -78,7 +78,7 @@ public class SessionServiceImpl implements SessionService {
 	public void doWithSession(String token, Consumer<SessionDTO> doWithSession) {
 
 		if (cacheService.containsKey(token, this.tokenSessionCache)) {
-			SessionDTO sessionDTO = this.getEntityById(token);
+			SessionDTO sessionDTO = this.getResourceById(token);
 
 			// touch omnisession to update idle timeouts
 			touchOmnisession(sessionDTO);
@@ -95,7 +95,7 @@ public class SessionServiceImpl implements SessionService {
 		final List<SessionDTO> relatedSessions = new ArrayList<SessionDTO>();
 
 		// if session exist
-		SessionDTO sessionDTO = this.getEntityById(token);
+		SessionDTO sessionDTO = this.getResourceById(token);
 		if (sessionDTO != null) {
 			Set<String> userSessionIdSet = this.getFromOmnisessionOfDefault(sessionDTO);
 
@@ -104,7 +104,7 @@ public class SessionServiceImpl implements SessionService {
 				String relatedToken = iter.next();
 
 				if (!relatedToken.equals(token)) {
-					SessionDTO relatedSession = this.getEntityById(relatedToken);
+					SessionDTO relatedSession = this.getResourceById(relatedToken);
 
 					// if exist in cache
 					if (relatedSession != null) {
@@ -130,9 +130,10 @@ public class SessionServiceImpl implements SessionService {
 		T result = null;
 
 		if (cacheService.containsKey(token, this.tokenSessionCache)) {
-			SessionDTO sessionDTO = this.getEntityById(token);
-
-			result = sessionDTO.getData(key, clazz);
+			SessionDTO sessionDTO = this.getResourceById(token);
+			
+			// TODO review this
+//			result = sessionDTO.retrieveDataFromPayload(key, clazz);
 		}
 
 		return result;
@@ -143,10 +144,11 @@ public class SessionServiceImpl implements SessionService {
 
 		if (cacheService.containsKey(token, this.tokenSessionCache)) {
 			// get the session
-			SessionDTO sessionDTO = this.getEntityById(token);
+			SessionDTO sessionDTO = this.getResourceById(token);
 
 			// update session
-			sessionDTO.putData(key, data);
+			// TODO review this
+//			sessionDTO.putDataIntoPayload(key, data);
 
 		}
 
@@ -205,9 +207,8 @@ public class SessionServiceImpl implements SessionService {
 	}
 
 	@Override
-	public Class<? extends SessionDTO> getEntityClass() {
-		// TODO Auto-generated method stub
-		return null;
+	public Class<? extends SessionDTO> getResourceClass() {
+		return SessionDTO.class;
 	}
 
 }

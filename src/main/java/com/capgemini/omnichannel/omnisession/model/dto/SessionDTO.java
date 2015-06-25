@@ -80,12 +80,12 @@ public class SessionDTO implements Serializable {
 		return new HashMap<String, Object>(this.payload);
 	}
 
-	public void putData(String key, Object value) {
+	public void putDataIntoPayload(String key, Object value) {
 		this.payload.put(key, value);
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T getData(String key, Class<? extends T> clazz) {
+	public <T> T retrieveDataFromPayload(String key, Class<? extends T> clazz) {
 		T result = (T) this.payload.get(key);
 
 		return result;

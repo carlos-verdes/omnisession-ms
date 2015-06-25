@@ -4,19 +4,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.capgemini.omnichannel.common.integration.rest.BaseResourceRestController;
+import com.capgemini.omnichannel.common.model.service.ResourcePersistenceService;
 import com.capgemini.omnichannel.omnisession.model.dto.SessionDTO;
-import com.capgemini.omnichannel.omnisession.model.service.EntityPersistenceService;
 import com.capgemini.omnichannel.omnisession.model.service.SessionService;
 
 @RestController("session")
 @RequestMapping("/session")
-public class OmnisessionRestController extends BaseEntityRestController<SessionDTO>{
+public class OmnisessionRestController extends BaseResourceRestController<SessionDTO, String> {
 
 	@Autowired
 	private SessionService sessionService;
-	
+
 	@Override
-	EntityPersistenceService<SessionDTO> getEntityPersistenceService() {
+	public ResourcePersistenceService<SessionDTO,String> getResourcePersistenceService() {
 		return this.sessionService;
 	}
 
@@ -27,6 +28,5 @@ public class OmnisessionRestController extends BaseEntityRestController<SessionD
 	public void setSessionService(SessionService sessionService) {
 		this.sessionService = sessionService;
 	}
-
 
 }
