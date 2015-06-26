@@ -3,9 +3,11 @@ package com.capgemini.omnichannel.omnisession;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @EnableAutoConfiguration
+@ComponentScan({"com.capgemini.omnichannel.omnisession","com.capgemini.omnichannel.common.integration"})
 public class OmnisessionMicroserviceApplication {
 
 	public static void main(String[] args) {

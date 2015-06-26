@@ -1,4 +1,4 @@
-package com.capgemini.omnichannel.omnisession.integration.rest;
+package com.capgemini.omnichannel.omnisession.integration.rest.config;
 
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;

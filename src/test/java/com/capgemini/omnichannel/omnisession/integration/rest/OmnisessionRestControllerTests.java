@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.capgemini.omnichannel.omnisession.integration.rest.config.RestTestConfiguration;
 import com.capgemini.omnichannel.omnisession.model.dto.SessionDTO;
 import com.capgemini.omnichannel.omnisession.model.service.SessionService;
 
