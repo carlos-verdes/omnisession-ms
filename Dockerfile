@@ -9,4 +9,4 @@ RUN echo "building omnisession-ms, home: "$HOME && cd $HOME && git clone https:/
 
 EXPOSE 8080
 
-CMD java -jar $HOME/omnisession-microservice/target/omnisession-ms.jar
+CMD java -jar $HOME/omnisession-ms/target/omnisession-ms.jar
