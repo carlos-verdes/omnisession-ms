@@ -11,13 +11,13 @@ import com.capgemini.omnichannel.omnisession.model.service.SessionService;
 
 @RestController("sessions")
 @RequestMapping("/sessions")
-public class OmnisessionRestController extends BaseResourceRestController<SessionDTO, String> {
+public class OmnisessionRestController extends BaseResourceRestController<SessionDTO> {
 
 	@Autowired
 	private SessionService sessionService;
 
 	@Override
-	public ResourcePersistenceService<SessionDTO,String> getResourcePersistenceService() {
+	public ResourcePersistenceService<SessionDTO> getResourcePersistenceService() {
 		return this.sessionService;
 	}
 

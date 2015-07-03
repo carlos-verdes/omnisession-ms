@@ -5,7 +5,7 @@ import java.util.List;
 import com.capgemini.omnichannel.common.model.service.ResourcePersistenceService;
 import com.capgemini.omnichannel.omnisession.model.dto.SessionDTO;
 
-public interface SessionService extends ResourcePersistenceService<SessionDTO, String> {
+public interface SessionService extends ResourcePersistenceService<SessionDTO> {
 
 	/**
 	 * Retrieves the sessions associated with the same user.
@@ -35,6 +35,9 @@ public interface SessionService extends ResourcePersistenceService<SessionDTO, S
 	 */
 	public <T> void updateSessionData(String token, String key, T data);
 
-	Class<? extends SessionDTO> getResourceClass();
+	@SuppressWarnings("rawtypes")
+	default Class getResourceClass() {
+		return SessionDTO.class;
+	}
 
 }

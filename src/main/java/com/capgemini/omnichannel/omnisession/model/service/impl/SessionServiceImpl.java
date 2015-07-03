@@ -206,9 +206,4 @@ public class SessionServiceImpl implements SessionService {
 		this.userTokensCache = userTokensCache;
 	}
 
-	@Override
-	public Class<? extends SessionDTO> getResourceClass() {
-		return SessionDTO.class;
-	}
-
 }

@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import junit.framework.Assert;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +27,7 @@ import com.capgemini.omnichannel.omnisession.model.service.SessionService;
 @WebAppConfiguration
 public class OmnisessionRestControllerTests {
 
-	private static final String REST_PATTERN = "/session/%s";
+	private static final String REST_PATTERN = "/sessions/%s";
 
 	private MockMvc mockMvc;
 
@@ -52,6 +53,7 @@ public class OmnisessionRestControllerTests {
 		SessionDTO session = new SessionDTO();
 		session.setUserId(USER_1);
 		session.setToken(USER_1_SESSION_1);
+
 		// new SessionDTO(USER_1, USER_1_SESSION_1)
 		when(sessionService.getResourceById(USER_1_SESSION_1)).thenReturn(session);
 		when(sessionService.getResourceById(BAD_SESSION)).thenReturn(null);
@@ -59,8 +61,10 @@ public class OmnisessionRestControllerTests {
 		String goodUri = String.format(REST_PATTERN, USER_1_SESSION_1);
 		String badUri = String.format(REST_PATTERN, BAD_SESSION);
 
-		mockMvc.perform(get(goodUri)).andExpect(status().isOk()).andExpect(jsonPath("$.data.userId", is(USER_1)))
-				.andExpect(jsonPath("$.data.token", is(USER_1_SESSION_1)));
+		mockMvc.perform(get(goodUri))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.data.userId", is(USER_1)))
+			.andExpect(jsonPath("$.data.token", is(USER_1_SESSION_1)));
 
 		mockMvc.perform(get(badUri)).andExpect(status().isNotFound());
 
