@@ -10,7 +10,7 @@ import com.capgemini.omnichannel.omnisession.model.dto.SessionDTO;
 import com.capgemini.omnichannel.omnisession.model.service.SessionService;
 
 @RestController("sessions")
-@RequestMapping("/sessions")
+@RequestMapping("/sessions/")
 public class OmnisessionRestController extends BaseResourceRestController<SessionDTO> {
 
 	@Autowired

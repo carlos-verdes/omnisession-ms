@@ -1,8 +1,11 @@
 package com.capgemini.omnichannel.omnisession.integration.rest.config;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -20,7 +23,15 @@ public class RestTestConfiguration {
 	@Bean
 	public SessionService sessionService() {
 		SessionService mock = Mockito.mock(SessionService.class);
-		
+
+		// global mock methods
+		when(mock.getResourceId(any())).thenAnswer(new Answer<String>() {
+			public String answer(InvocationOnMock invocation) {
+				Object[] args = invocation.getArguments();
+				SessionDTO mockSessuion = (SessionDTO) args[0];
+				return mockSessuion.getUserId();
+			}
+		});
 		return mock;
 	}
 

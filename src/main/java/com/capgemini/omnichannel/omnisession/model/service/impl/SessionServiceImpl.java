@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,8 @@ import com.capgemini.omnichannel.omnisession.model.service.SessionService;
 
 @Service
 public class SessionServiceImpl implements SessionService {
+	private static final HashSet<String> DEFAULT_USER_SESSION_SET = new HashSet<String>();
+
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@Value("${omnisession.tokenSessionCache}")
@@ -30,6 +33,20 @@ public class SessionServiceImpl implements SessionService {
 
 	@Autowired
 	private CacheService cacheService;
+
+
+	@Override
+	public String getResourceId(SessionDTO resource) {
+		return userNameLambda(resource).get();
+	}
+
+	@Override
+	public List<SessionDTO> getResources(Principal principal) {
+
+		List<SessionDTO> result = getRelatedSessionsLambda(userNameLambda(principal), principal);
+
+		return result;
+	}
 
 	@Override
 	public SessionDTO getResourceById(String id, Principal principal) {
@@ -90,38 +107,48 @@ public class SessionServiceImpl implements SessionService {
 
 	}
 
-	@Override
-	public List<SessionDTO> getRelatedSessions(String token, Principal principal) {
+	public List<SessionDTO> getRelatedSessionsLambda(Supplier<String> userNameSupplier, Principal principal) {
+		// TODO review if a user could get omnisession from other user
 
 		final List<SessionDTO> relatedSessions = new ArrayList<SessionDTO>();
 
-		// if session exist
-		SessionDTO sessionDTO = this.getResourceById(token,principal);
-		if (sessionDTO != null) {
-			Set<String> userSessionIdSet = this.getFromOmnisessionOfDefault(sessionDTO);
+		Set<String> userSessionIdSet = getUserSessions(userNameSupplier);
 
+		// if related sessions exist
+		if (userSessionIdSet != null && !userSessionIdSet.isEmpty()) {
 			Iterator<String> iter = userSessionIdSet.iterator();
 			while (iter.hasNext()) {
 				String relatedToken = iter.next();
 
-				if (!relatedToken.equals(token)) {
-					SessionDTO relatedSession = this.getResourceById(relatedToken,principal);
+				SessionDTO relatedSession = this.getResourceById(relatedToken, principal);
 
-					// if exist in cache
-					if (relatedSession != null) {
-						// add to results
-						relatedSessions.add(relatedSession);
-					} else {
-						// remove from omnisession
-						iter.remove();
-					}
-
+				// if exist in cache
+				if (relatedSession != null) {
+					// add to results if different
+					relatedSessions.add(relatedSession);
+				} else {
+					// remove from omnisession
+					iter.remove();
 				}
+
 			}
 			// update omnisession (some session could be expired)
-			updateOmnisessionCache(sessionDTO, userSessionIdSet);
+			updateOmnisessionCache(userNameSupplier, userSessionIdSet);
 
 		}
+
+		return relatedSessions;
+	}
+
+	@Override
+	public List<SessionDTO> getRelatedSessions(String token, Principal principal) {
+
+		List<SessionDTO> relatedSessions = null;
+
+		// if session exist
+		SessionDTO sessionDTO = this.getResourceById(token, principal);
+		Supplier<String> userNameLambda = userNameLambda(sessionDTO);
+		relatedSessions = getRelatedSessionsLambda(userNameLambda, principal);
 
 		return relatedSessions;
 	}
@@ -131,10 +158,9 @@ public class SessionServiceImpl implements SessionService {
 		T result = null;
 
 		if (cacheService.containsKey(token, this.tokenSessionCache)) {
-			SessionDTO sessionDTO = this.getResourceById(token,principal);
+			SessionDTO sessionDTO = this.getResourceById(token, principal);
 
-			// TODO review this
-			// result = sessionDTO.retrieveDataFromPayload(key, clazz);
+			result = sessionDTO.retrieveDataFromPayload(key, clazz);
 		}
 
 		return result;
@@ -145,25 +171,45 @@ public class SessionServiceImpl implements SessionService {
 
 		if (cacheService.containsKey(token, this.tokenSessionCache)) {
 			// get the session
-			SessionDTO sessionDTO = this.getResourceById(token,principal);
+			SessionDTO sessionDTO = this.getResourceById(token, principal);
 
 			// update session
-			// TODO review this
-			// sessionDTO.putDataIntoPayload(key, data);
+			sessionDTO.putDataIntoPayload(key, data);
 
 		}
 
 	}
 
-	private Set<String> getFromOmnisessionOfDefault(SessionDTO sessionDTO) {
-		String userId = sessionDTO.getUserId();
-		return this.cacheService.getOrDefault(userId, this.userTokensCache, new HashSet<String>());
+	// private Set<String> getUserSessions(final Principal principal) {
+	// Set<String> result = principal != null ? getUserSessions(() -> principal.getName()())
+	// : DEFAULT_USER_SESSION_SET;
+	//
+	// return result;
+	//
+	// }
+
+	private Set<String> getUserSessions(Supplier<String> userSupplier) {
+
+		String userId = userSupplier != null ? userSupplier.get() : null;
+
+		Set<String> result = userId != null ? this.cacheService.getOrDefault(userId, this.userTokensCache,
+				DEFAULT_USER_SESSION_SET) : DEFAULT_USER_SESSION_SET;
+		return result;
+
 	}
 
-	private void touchOmnisession(SessionDTO sessionDTO) {
+	private static Supplier<String> userNameLambda(final SessionDTO sessionDTO) {
+		return () -> sessionDTO != null ? sessionDTO.getUserId() : null;
+	}
+
+	private static Supplier<String> userNameLambda(final Principal principal) {
+		return () -> principal != null ? principal.getName() : null;
+	}
+
+	private void touchOmnisession(final SessionDTO sessionDTO) {
 		// just check the omnisession to update timeouts
 		if (sessionDTO != null) {
-			getFromOmnisessionOfDefault(sessionDTO);
+			getUserSessions(userNameLambda(sessionDTO));
 
 		}
 
@@ -172,23 +218,30 @@ public class SessionServiceImpl implements SessionService {
 	private void updateOmnisession(SessionDTO sessionDTO) {
 
 		if (sessionDTO != null) {
+
+			Supplier<String> userNameLambda = userNameLambda(sessionDTO);
+
 			// get user sessions (or default)
-			Set<String> userSessionIdsSet = getFromOmnisessionOfDefault(sessionDTO);
+			Set<String> userSessionIdsSet = getUserSessions(userNameLambda);
 
 			// add current session
 			userSessionIdsSet.add(sessionDTO.getToken());
 
-			// update cacheO
-			updateOmnisessionCache(sessionDTO, userSessionIdsSet);
+			// update cache
+			updateOmnisessionCache(userNameLambda, userSessionIdsSet);
 
 		}
 
 	}
 
-	private void updateOmnisessionCache(SessionDTO sessionDTO, Set<String> userSessionIdsSet) {
-		String userId = sessionDTO.getUserId();
-		// put in omnisession in cache
-		this.cacheService.put(userId, this.userTokensCache, userSessionIdsSet);
+	private void updateOmnisessionCache(Supplier<String> userNameSupplier, Set<String> userSessionIdsSet) {
+		String userId = userNameSupplier.get();
+
+		if (userId != null) {
+			// put in omnisession in cache
+			this.cacheService.put(userId, this.userTokensCache, userSessionIdsSet);
+
+		}
 	}
 
 	public String getTokenSessionCache() {
