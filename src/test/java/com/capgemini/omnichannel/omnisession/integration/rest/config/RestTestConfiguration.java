@@ -21,8 +21,6 @@ public class RestTestConfiguration {
 	public SessionService sessionService() {
 		SessionService mock = Mockito.mock(SessionService.class);
 		
-		when(mock.getResourceClass()).thenReturn(SessionDTO.class);
-		
 		return mock;
 	}
 

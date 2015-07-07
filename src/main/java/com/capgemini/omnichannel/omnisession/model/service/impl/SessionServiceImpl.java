@@ -1,5 +1,6 @@
 package com.capgemini.omnichannel.omnisession.model.service.impl;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -31,7 +32,7 @@ public class SessionServiceImpl implements SessionService {
 	private CacheService cacheService;
 
 	@Override
-	public SessionDTO getResourceById(String id) {
+	public SessionDTO getResourceById(String id, Principal principal) {
 		SessionDTO sessionDTO = cacheService.get(id, tokenSessionCache);
 
 		if (sessionDTO != null) {
@@ -42,7 +43,7 @@ public class SessionServiceImpl implements SessionService {
 	}
 
 	@Override
-	public <S extends SessionDTO> S updateResource(String id, S value) {
+	public <S extends SessionDTO> S updateResource(String id, S value, Principal principal) {
 		logger.debug(String.format("updating Resource, id:value -->  %s: %s", id, value));
 
 		// update omnisession
@@ -55,7 +56,7 @@ public class SessionServiceImpl implements SessionService {
 	}
 
 	@Override
-	public <S extends SessionDTO> S insertResource(String id, S value) {
+	public <S extends SessionDTO> S insertResource(String id, S value, Principal principal) {
 		logger.debug(String.format("inserting Resource, id:value -->  %s: %s", id, value));
 
 		// update omnisession
@@ -75,10 +76,10 @@ public class SessionServiceImpl implements SessionService {
 	 * @param doWithSession
 	 *            function that receives the session
 	 */
-	public void doWithSession(String token, Consumer<SessionDTO> doWithSession) {
+	public void doWithSession(String token, Consumer<SessionDTO> doWithSession, Principal principal) {
 
 		if (cacheService.containsKey(token, this.tokenSessionCache)) {
-			SessionDTO sessionDTO = this.getResourceById(token);
+			SessionDTO sessionDTO = this.getResourceById(token, principal);
 
 			// touch omnisession to update idle timeouts
 			touchOmnisession(sessionDTO);
@@ -90,12 +91,12 @@ public class SessionServiceImpl implements SessionService {
 	}
 
 	@Override
-	public List<SessionDTO> getRelatedSessions(String token) {
+	public List<SessionDTO> getRelatedSessions(String token, Principal principal) {
 
 		final List<SessionDTO> relatedSessions = new ArrayList<SessionDTO>();
 
 		// if session exist
-		SessionDTO sessionDTO = this.getResourceById(token);
+		SessionDTO sessionDTO = this.getResourceById(token,principal);
 		if (sessionDTO != null) {
 			Set<String> userSessionIdSet = this.getFromOmnisessionOfDefault(sessionDTO);
 
@@ -104,7 +105,7 @@ public class SessionServiceImpl implements SessionService {
 				String relatedToken = iter.next();
 
 				if (!relatedToken.equals(token)) {
-					SessionDTO relatedSession = this.getResourceById(relatedToken);
+					SessionDTO relatedSession = this.getResourceById(relatedToken,principal);
 
 					// if exist in cache
 					if (relatedSession != null) {
@@ -126,29 +127,29 @@ public class SessionServiceImpl implements SessionService {
 	}
 
 	@Override
-	public <T> T getSessionData(String token, String key, Class<? extends T> clazz) {
+	public <T> T getSessionData(String token, String key, Class<? extends T> clazz, Principal principal) {
 		T result = null;
 
 		if (cacheService.containsKey(token, this.tokenSessionCache)) {
-			SessionDTO sessionDTO = this.getResourceById(token);
-			
+			SessionDTO sessionDTO = this.getResourceById(token,principal);
+
 			// TODO review this
-//			result = sessionDTO.retrieveDataFromPayload(key, clazz);
+			// result = sessionDTO.retrieveDataFromPayload(key, clazz);
 		}
 
 		return result;
 	}
 
 	@Override
-	public <T> void updateSessionData(String token, String key, T data) {
+	public <T> void updateSessionData(String token, String key, T data, Principal principal) {
 
 		if (cacheService.containsKey(token, this.tokenSessionCache)) {
 			// get the session
-			SessionDTO sessionDTO = this.getResourceById(token);
+			SessionDTO sessionDTO = this.getResourceById(token,principal);
 
 			// update session
 			// TODO review this
-//			sessionDTO.putDataIntoPayload(key, data);
+			// sessionDTO.putDataIntoPayload(key, data);
 
 		}
 
